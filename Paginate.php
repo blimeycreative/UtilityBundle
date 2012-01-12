@@ -7,9 +7,9 @@ use Doctrine\ORM\QueryBuilder;
 
 class Paginate {
 
-  private $container, $query, $limit, $page, $result, $data, $template, $request, $router, $route, $request_params;
+  private $container, $query, $alias, $limit, $page, $result, $data, $template, $request, $router, $route, $request_params, $list_limit;
 
-  public function __construct(Container $container, QueryBuilder $query, $limit = 20, $page = 1) {
+  public function __construct(Container $container, QueryBuilder $query, $limit = 20, $page = 1, $list_limit = 3) {
     $this->container = $container;
     $this->limit = $limit;
     $this->query = $query;
@@ -18,6 +18,7 @@ class Paginate {
     $this->router = $container->get('router');
     $this->route = $this->request->attributes->get('_route');
     $this->request_params = $this->request->attributes->all() + $this->request->query->all();
+    $this->list_limit = $list_limit;
     return $this;
   }
 
@@ -58,16 +59,22 @@ class Paginate {
       $this->data = $val;
     else {
       $this->data = new \stdClass();
-      $query = clone $this->query;
-      $this->data->total_results = $query
+      $this->data->offset = $this->page * $this->limit;
+      $this->data->url = $this->getUrl();
+      $total_query = clone $this->query;
+      $local_query = clone $this->query;
+      $this->data->count = $this->data->offset + count($local_query
+                              ->setMaxResults($this->limit)
+                              ->setFirstResult($this->data->offset)
+                              ->getQuery()
+                              ->getScalarResult());
+      $this->data->total_results = $total_query
               ->select('COUNT(u)')
               ->getQuery()
               ->getSingleScalarResult();
       $this->data->total_pages = ceil($this->data->total_results / $this->limit);
       if ($this->page > $this->data->total_pages)
         Exception::pageNumber();
-      $this->data->offset = $this->page * $this->limit;
-      $this->data->url = $this->getUrl();
     }
   }
 
@@ -81,27 +88,39 @@ class Paginate {
     if ($val)
       $this->template = $val;
     else
-      $this->template = <<<TEMPLATE
-<ul>
-  <li><a href="{$this->getUrl(1)}">First</a></li>
-  {$this->getPages()}
-  <li><a href="{$this->getUrl(($this->data->total_pages))}">Last</a></li>
-</ul>
-TEMPLATE;
+      $this->template = $this->container
+              ->get('templating')
+              ->render('OxygenPaginationBundle:Pagination:pagination.html.twig', array(
+          'link_list' => $this->generateLinkList(),
+          'data' => $this->data
+              ));
   }
 
-  public function getPages() {
-    $string = '';
-    for ($i = 1; $i <= $this->data->total_pages; $i++) {
-      $string.='<li>';
-      if ($i != $this->page + 1)
-        $string .= '<a href="' . $this->getUrl($i) . '">';
-      $string .= $i;
-      if ($i != $this->page + 1)
-        $string .= '</a>';
-      $string .= '</li>';
+  public function generateLinkList() {
+    $link_list = array();
+    $upper_limit = (int) (($this->page + 1) + ($this->list_limit - 1) / 2);
+    $lower_limit = (int) (($this->page + 1) - ($this->list_limit - 1) / 2);
+    if ($this->data->total_pages > 1) {
+      if ($this->page != 0)
+        $link_list[] = $this->getPageLink('First', 1);
+      if ($lower_limit > 1)
+        $link_list[] = $this->getPageLink('..', ($this->page + 1));
+      for ($i = ((int) ($this->page + 1) - ($this->list_limit - 1) / 2 > 1 ? $lower_limit : 1); $i <= ($upper_limit < $this->data->total_pages ? $upper_limit : $this->data->total_pages); $i++)
+        $link_list[] = $this->getPageLink($i, $i);
+      if ($upper_limit < $this->data->total_pages)
+        $link_list[] = $this->getPageLink('..', ($this->page + 1));
+      if (($this->page + 1) != $this->data->total_pages)
+        $link_list[] = $this->getPageLink('Last', $this->data->total_pages);
     }
-    return $string;
+    return $link_list;
+  }
+
+  public function getPageLink($text, $page) {
+    $link = new \stdClass();
+    if ($page != $this->page + 1)
+      $link->location = $this->getUrl($page);
+    $link->text = $text;
+    return $link;
   }
 
   public function getUrl($page = false) {

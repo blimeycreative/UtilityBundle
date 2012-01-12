@@ -1,0 +1,16 @@
+<div class="pagination">
+  {% if data.total_pages > 1 %}
+  <ul>
+    {% for link in link_list %}
+      <li>
+        {% if link.location is defined %}
+          <a href="{{ link.location }}">{{ link.text }}</a>
+        {% else %}
+          {{ link.text }}
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <p>Showing {{ data.offset + 1 }} to {{ data.count }} of {{ data.total_results }} results</p>
+</div>
