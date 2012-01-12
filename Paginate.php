@@ -9,9 +9,10 @@ class Paginate {
 
   private $container, $query, $alias, $limit, $page, $result, $data, $template, $request, $router, $route, $request_params, $list_limit;
 
-  public function __construct(Container $container, QueryBuilder $query, $limit = 20, $page = 1, $list_limit = 3) {
+  public function __construct(Container $container, QueryBuilder $query, $alias='a', $limit = 20, $page = 1, $list_limit = 3) {
     $this->container = $container;
     $this->limit = $limit;
+    $this->alias = $alias;
     $this->query = $query;
     $this->page = $page;
     $this->request = $container->get('request');
@@ -69,7 +70,7 @@ class Paginate {
                               ->getQuery()
                               ->getScalarResult());
       $this->data->total_results = $total_query
-              ->select('COUNT(u)')
+              ->select('COUNT('.$this->alias.')')
               ->getQuery()
               ->getSingleScalarResult();
       $this->data->total_pages = ceil($this->data->total_results / $this->limit);
