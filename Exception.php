@@ -1,6 +1,6 @@
 <?php
 
-namespace Oxygen\PaginationBundle;
+namespace Oxygen\UtilityBundle;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Exception {

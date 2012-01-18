@@ -1,10 +1,10 @@
 <?php
 
-namespace Oxygen\PaginationBundle;
+namespace Oxygen\UtilityBundle;
 
 use Symfony\Component\DependencyInjection\Container;
 
-class Factory {
+class PaginateFactory {
 
   private $container;
   private $class;

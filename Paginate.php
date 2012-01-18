@@ -1,6 +1,6 @@
 <?php
 
-namespace Oxygen\PaginationBundle;
+namespace Oxygen\UtilityBundle;
 
 use Symfony\Component\DependencyInjection\Container;
 use Doctrine\ORM\QueryBuilder;
@@ -91,7 +91,7 @@ class Paginate {
     else
       $this->template = $this->container
               ->get('templating')
-              ->render('OxygenPaginationBundle:Pagination:pagination.html.twig', array(
+              ->render('OxygenUtilityBundle:Pagination:pagination.html.twig', array(
           'link_list' => $this->generateLinkList(),
           'data' => $this->data
               ));
