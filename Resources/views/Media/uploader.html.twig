@@ -10,6 +10,7 @@ $(document).ready(function() {
   $('select#media_location').change(function(){
     var path = $(this).val();
     $('#media_nameUploader').remove();
+    $('#media_nameQueue').remove();
     $('#media_name').uploadify({
       'uploader'  : '/bundles/oxygenutility/uploadify/uploadify.swf',
       'script'    : '{% block upload_path %}{{ path('media_upload') }}{% endblock %}',

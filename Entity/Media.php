@@ -51,6 +51,11 @@ class Media {
    * @ORM\Column(name="created", type="datetime")
    */
   private $created;
+  
+  public function __construct()
+    {
+        $this->setCreated(new \DateTime());
+    }
 
   /**
    * Get id
