@@ -5,14 +5,21 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="oxygen_pagination.class">Oxygen\UtilityBundle\Paginate</parameter>
-        <parameter key="oxygen_pagination.factory.class">Oxygen\UtilityBundle\PaginateFactory</parameter>
+        <parameter key="oxygen.utility.pagination.class">Oxygen\UtilityBundle\Paginate</parameter>
+        <parameter key="oxygen.utility.pagination.factory.class">Oxygen\UtilityBundle\PaginateFactory</parameter>
+        <parameter key="oxygen.utility.media.controller.class">Oxygen\UtilityBundle\Controller\MediaController</parameter>
+        <parameter key="oxygen.utility.media.class">Oxygen\UtilityBundle\Media</parameter>
+        <parameter key="oxygen.utility.media.factory.class">Oxygen\UtilityBundle\MediaFactory</parameter>
     </parameters>
 
     <services>
-        <service id="oxygen_pagination.factory" class="%oxygen_pagination.factory.class%">
+        <service id="oxygen.utility.pagination.factory" class="%oxygen.utility.pagination.factory.class%">
             <argument type="service" id="service_container" />
-            <argument>%oxygen_pagination.class%</argument>
+            <argument>%oxygen.utility.pagination.class%</argument>
+        </service>
+        <service id="oxygen.utility.media.factory" class="%oxygen.utility.media.factory.class%">
+            <argument type="service" id="service_container" />
+            <argument>%oxygen.utility.media.class%</argument>
         </service>
     </services>
 </container>

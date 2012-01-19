@@ -1,0 +1,8 @@
+## YAML Template.
+---
+parameters:
+  media.image.sizes:
+    small:    {width: "200", height: "200"}
+    medium:   {width: "350", height: "350"}
+    large:    {width: "500", height: "500"}
+    original: {width: "1600", height: "1600"}

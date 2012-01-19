@@ -22,9 +22,7 @@ class PaginateFactory {
       }
     }
 
-    $class = $this->class;
-
-    return new $class($this->container, $query, $alias, (int) $limit, (int) $page);
+   return new $this->class($this->container, $query, $alias, (int) $limit, (int) $page);
   }
 
 }
