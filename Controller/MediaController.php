@@ -20,8 +20,7 @@ class MediaController extends Controller {
   public function uploadAction() {
     $file = $this->getRequest()->files->get('Filedata');
     $data = $this->getRequest()->request->all();
-    $media = $this->saveFile($file, $data);
-    return array();
+    return array('media' => $this->saveFile($file, $data));
   }
 
   public function resizeAndSave($path, $size, $name, $ext, $tmp) {
@@ -75,7 +74,7 @@ class MediaController extends Controller {
       $media->setExtension($file[1]);
       $media->setLocation($directory);
       $em->persist($media);
-    } else 
+    } else
       $em->remove($media);
     $em->flush();
     return $file[2] ? $media : false;
