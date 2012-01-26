@@ -9,13 +9,13 @@ class LocationFixtures extends AbstractFixture implements OrderedFixtureInterfac
   
   public function load( $manager){
     $location = new Location();
-    $location->setName('Upload directory');
+    $location->setName('Uploads directory');
     $location->setPath('uploads');
     $manager->persist($location);
     $manager->flush();
     $location = new Location();
-    $location->setName('Upload inner directory');
-    $location->setPath('uploads/inner');
+    $location->setName('Uploads image directory');
+    $location->setPath('uploads/images');
     $manager->persist($location);
     $manager->flush();
   }
