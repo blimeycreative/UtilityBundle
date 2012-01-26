@@ -18,6 +18,8 @@ class MediaController extends Controller {
    * @Template
    */
   public function uploadAction() {
+    ini_set('memory_limit', '1024M');
+    ini_set('max_execution_time', 300);
     $file = $this->getRequest()->files->get('Filedata');
     $data = $this->getRequest()->request->all();
     return array('media' => $this->saveFile($file, $data));
@@ -49,30 +51,28 @@ class MediaController extends Controller {
     $ext = Utility::slugify($file->getExtension());
     $ext = $ext ? $ext : $file->guessExtension();
     $size = getimagesize($tmp);
-    $directory = $this->getDoctrine()->getRepository('OxygenUtilityBundle:Location')->find($data['directory']);
+    $em = $this->getDoctrine()->getEntityManager();
+    $directory = $em->getRepository('OxygenUtilityBundle:Location')->find($data['directory']);
     if (!$directory)
       throw $this->createNotFoundException('no directory found');
-    $dirs = explode('/', $directory->getPath());
-    $path = '';
-    foreach ($dirs as $dir) {
-      $path .= ($path == '' ? $dir : '/' . $dir);
-      if (!is_dir($path))
-        mkdir($path, 0777, true);
-    }
-    $em = $this->getDoctrine()->getEntityManager();
+    if (!is_dir($directory->getPath()))
+      mkdir($directory->getPath(), 0777, true);
 
-    $media = new Media();
-    $media->setName($name);
+    $media = $em->getRepository('OxygenUtilityBundle:Media')->findOneBy(array('name' => $name));
+    if (!$media) {
+      $media = new Media();
+      $media->setName($name);
+    }
     $media->setExtension($ext);
     $em->persist($media);
     $em->flush();
-
-    $file = $this->resizeAndSave($path, $size, $name . '-' . $media->getId(), $ext, $tmp);
-
+    
+    $file = $this->resizeAndSave($directory->getPath(), $size, $name, $ext, $tmp);
+    
     if ($file[2]) {
       $media->setName($file[0]);
       $media->setExtension($file[1]);
-      $media->setLocation($directory);
+      $media->setLocation($directory); 
       $em->persist($media);
     } else
       $em->remove($media);

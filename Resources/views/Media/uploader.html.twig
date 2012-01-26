@@ -16,6 +16,7 @@ $(document).ready(function() {
       'script'    : '{% block upload_path %}{{ path('media_upload') }}{% endblock %}',
       'cancelImg' : '/bundles/oxygenutility/images/cancel.png',
       'scriptData': {'directory':path{% block extraData %}{% endblock %}}, 
+      'multi'     : true,
       'auto'      : true
     }); 
   });
