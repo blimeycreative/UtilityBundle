@@ -21,5 +21,9 @@
             <argument type="service" id="service_container" />
             <argument>%oxygen.utility.media.class%</argument>
         </service>
+        <service id="twig.extension.media.uploader" class="Oxygen\UtilityBundle\Twig\Extension\OxygenUtilityExtension">
+            <argument type="service" id="service_container"></argument>
+            <tag name="twig.extension" alias="oxygen_utility" />
+        </service>
     </services>
 </container>
