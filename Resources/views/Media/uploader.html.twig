@@ -17,10 +17,7 @@ $(document).ready(function() {
       'cancelImg' : '/bundles/oxygenutility/images/cancel.png',
       'scriptData': {'directory':path{% block extraData %}{% endblock %}}, 
       'multi'     : true,
-      'auto'      : true,
-      'onAllComplete' : function(event,data) {
-          window.location.reload()
-      }
+      'auto'      : true
     }); 
   });
 });
