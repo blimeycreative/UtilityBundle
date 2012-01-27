@@ -4,10 +4,11 @@ namespace Oxygen\UtilityBundle\DataFixtures\ORM;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Oxygen\UtilityBundle\Entity\Location;
+use Doctrine\Common\Persistence\ObjectManager;
 
 class LocationFixtures extends AbstractFixture implements OrderedFixtureInterface{
   
-  public function load( $manager){
+  public function load(ObjectManager $manager){
     $location = new Location();
     $location->setName('Uploads directory');
     $location->setPath('uploads');
