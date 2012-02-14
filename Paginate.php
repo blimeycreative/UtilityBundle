@@ -7,7 +7,9 @@ use Doctrine\ORM\QueryBuilder;
 
 class Paginate {
 
-  private $container, $query, $alias, $limit, $page, $result, $data, $template, $request, $router, $route, $request_params, $list_limit;
+  private $container, $query, $alias, $limit, $page, $request, $router, $route, $request_params, $list_limit;
+  private $result, $data, $template = array();
+  private static $instance;
 
   public function __construct(Container $container, QueryBuilder $query, $alias='a', $limit = 20, $page = 1, $list_limit = 3) {
     $this->container = $container;
@@ -23,95 +25,98 @@ class Paginate {
     return $this;
   }
 
-  public function getPagination() {
-    $pagination_object = new \stdClass();
-
-    $pagination_object->data = $this->getData();
-    $pagination_object->result = $this->getResult();
-    $pagination_object->template = $this->getTemplate();
-
-    return $pagination_object;
+  public static function getInstance(Container $container, QueryBuilder $query, $alias='a', $limit = 20, $page = 1, $list_limit = 3) {
+    if (!self::$instance)
+      self::$instance = new Paginate($container, $query, $alias, $limit, $page, $list_limit);
+    return self::$instance;
   }
 
-  public function getResult() {
-    if (!$this->result)
-      $this->setResult();
-    return $this->result;
+  public function getResults($name = 'standard') {
+    $this->getData($name);
+    $this->getTemplate($name);
+    return $this->getResult($name);
   }
 
-  public function setResult($val = false) {
+  public function getResult($name) {
+    if (!isset($this->result[$name]))
+      $this->setResult(false, $name);
+    return $this->result[$name];
+  }
+
+  public function setResult($val = false, $name = 'standard') {
     if ($val)
-      $this->result = $val;
+      $this->result[$name] = $val;
     else {
-      if (!$this->data || !(is_object($this->data) && property_exists($this->data, 'offset')))
-        $this->setData();
-      $this->result = $this->query->setMaxResults($this->limit)->setFirstResult($this->data->offset)->getQuery();
+      if (!$this->data[$name] || !(is_object($this->data[$name]) && property_exists($this->data[$name], 'offset')))
+        $this->setData($name);
+      $this->result[$name] = $this->query->setMaxResults($this->limit)->setFirstResult($this->data[$name]->offset)->getQuery();
     }
   }
 
-  public function getData() {
-    if (!$this->data)
-      $this->setData();
+  public function getData($name) {
+    if (!isset($this->data))
+      $this->setData(false, $name);
     return $this->data;
   }
 
-  public function setData($val = false) {
+  public function setData($val = false, $name = "standard") {
     if ($val)
-      $this->data = $val;
+      $this->data[$name] = $val;
     else {
-      $this->data = new \stdClass();
-      $this->data->offset = $this->page * $this->limit;
-      $this->data->url = $this->getUrl();
+      $data = new \stdClass();
+      $data->offset = $this->page * $this->limit;
+      $data->url = $this->getUrl();
       $total_query = clone $this->query;
       $local_query = clone $this->query;
-      $this->data->count = $this->data->offset + count($local_query
+      $data->count = $data->offset + count($local_query
                               ->setMaxResults($this->limit)
-                              ->setFirstResult($this->data->offset)
+                              ->setFirstResult($data->offset)
                               ->getQuery()
                               ->getScalarResult());
-      $this->data->total_results = $total_query
-              ->select('COUNT('.$this->alias.')')
+      $data->total_results = $total_query
+              ->select('COUNT(' . $this->alias . ')')
               ->getQuery()
               ->getSingleScalarResult();
-      $this->data->total_pages = ceil($this->data->total_results / $this->limit);
-      if ($this->page > $this->data->total_pages)
+      $data->total_pages = ceil($data->total_results / $this->limit);
+      if ($this->page > $data->total_pages)
         Exception::pageNumber();
+      $this->data[$name] = $data;
     }
   }
 
-  public function getTemplate() {
-    if (!$this->template)
-      $this->setTemplate();
-    return $this->template;
+  public function getTemplate($name) {
+    if (!isset($this->template[$name]))
+      $this->setTemplate(false, $name);
+    return $this->template[$name];
   }
 
-  public function setTemplate($val = false) {
+  public function setTemplate($val = false, $name = 'standard') {
     if ($val)
-      $this->template = $val;
+      $this->template[$name] = $val;
     else
-      $this->template = $this->container
+      $this->template[$name] = $this->container
               ->get('templating')
               ->render('OxygenUtilityBundle:Pagination:pagination.html.twig', array(
-          'link_list' => $this->generateLinkList(),
-          'data' => $this->data
+          'link_list' => $this->generateLinkList($name),
+          'data' => $this->data[$name]
               ));
   }
 
-  public function generateLinkList() {
+  public function generateLinkList($name) {
     $link_list = array();
     $upper_limit = (int) (($this->page + 1) + ($this->list_limit - 1) / 2);
     $lower_limit = (int) (($this->page + 1) - ($this->list_limit - 1) / 2);
-    if ($this->data->total_pages > 1) {
+    if ($this->data[$name]->total_pages > 1) {
       if ($this->page != 0)
         $link_list[] = $this->getPageLink('First', 1);
       if ($lower_limit > 1)
         $link_list[] = $this->getPageLink('..', ($this->page + 1));
-      for ($i = ((int) ($this->page + 1) - ($this->list_limit - 1) / 2 > 1 ? $lower_limit : 1); $i <= ($upper_limit < $this->data->total_pages ? $upper_limit : $this->data->total_pages); $i++)
+      for ($i = ((int) ($this->page + 1) - ($this->list_limit - 1) / 2 > 1 ? $lower_limit : 1); $i <= ($upper_limit < $this->data[$name]->total_pages ? $upper_limit : $this->data[$name]->total_pages); $i++)
         $link_list[] = $this->getPageLink($i, $i);
-      if ($upper_limit < $this->data->total_pages)
+      if ($upper_limit < $this->data[$name]->total_pages)
         $link_list[] = $this->getPageLink('..', ($this->page + 1));
-      if (($this->page + 1) != $this->data->total_pages)
-        $link_list[] = $this->getPageLink('Last', $this->data->total_pages);
+      if (($this->page + 1) != $this->data[$name]->total_pages)
+        $link_list[] = $this->getPageLink('Last', $this->data[$name]->total_pages);
     }
     return $link_list;
   }
@@ -135,6 +140,12 @@ class Paginate {
     }
 
     return $this->router->generate($this->route, $this->request_params);
+  }
+
+  public function getPagination($name) {
+    if (isset($this->template[$name]))
+      return $this->template[$name];
+    return false;
   }
 
 }

@@ -43,7 +43,8 @@ class OxygenUtilityExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            'media_uploader' => new \Twig_Function_Method($this, 'mediaUploader', array('is_safe' => array('html')))
+            'media_uploader' => new \Twig_Function_Method($this, 'mediaUploader', array('is_safe' => array('html'))),
+            'pagination' => new \Twig_Function_Method($this, 'pagination', array('is_safe' => array('html'))),
         );
     }
     /**
@@ -52,6 +53,14 @@ class OxygenUtilityExtension extends \Twig_Extension
     public function mediaUploader()
     {
         return $this->getContainer()->get('oxygen.utility.media.factory')->getUploader();
+    }
+    /**
+     * Get the pagination for the requested name
+     * @param string $name
+     * @return html 
+     */
+    public function pagination($name){
+      return $this->getContainer()->get('oxygen.utility.pagination.factory')->getPagination($name);
     }
 
     /**

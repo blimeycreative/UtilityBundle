@@ -17,6 +17,7 @@
             <argument type="service" id="service_container" />
             <argument>%oxygen.utility.pagination.class%</argument>
         </service>
+        <service id="oxygen_paginate" alias="oxygen.utility.pagination.factory" />
         <service id="oxygen.utility.media.factory" class="%oxygen.utility.media.factory.class%">
             <argument type="service" id="service_container" />
             <argument>%oxygen.utility.media.class%</argument>

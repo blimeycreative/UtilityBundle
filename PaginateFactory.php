@@ -21,8 +21,15 @@ class PaginateFactory {
         throw Exception::pageNumber();
       }
     }
+    $class = $this->class;
+    $this->class = $class::getInstance($this->container, $query, $alias, (int) $limit, (int) $page);
+    return $this->class;
+  }
 
-   return new $this->class($this->container, $query, $alias, (int) $limit, (int) $page);
+  public function getPagination($name) {
+    if (is_object($this->class))
+      return $this->class->getPagination($name);
+    return false;
   }
 
 }
